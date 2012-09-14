@@ -32,6 +32,29 @@ class mcollective::client::base(
       require => Anchor['mcollective::client::base::begin'],
       before  => Class['mcollective::client::config']
     }
+
+    if ( $version != 'present' and $version != 'latest' ) {
+      File {
+        ensure  => 'link',
+        require => Class['mcollective::client::package']
+      }
+
+      case versioncmp( $version, '2.2.0' ) {
+        '-1': {
+          file {
+            '/usr/bin/mco':
+              target => '/usr/sbin/mco'
+          }
+        }
+        default: {
+          file {
+            '/usr/sbin/mco':
+              target => '/usr/bin/mco'
+          }
+        }
+      }
+    }
+
   }
   class { 'mcollective::client::config':
     config      => $config,
